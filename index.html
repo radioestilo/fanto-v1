@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FANTO V1 - CORE TITÁN v5.1.0 (RECOVERY CORE)</title>
+    <title>FANTO V1 - CORE TITÁN v6.8.0 (LICENSE WATCHER)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/fontsource-roboto@4.0.0/index.css" rel="stylesheet">
@@ -12,19 +12,26 @@
         body { font-family: 'Roboto', sans-serif; background-color: #f1f5f9; color: #0f172a; -webkit-font-smoothing: antialiased; overflow-x: hidden; height: 100vh; display: flex; justify-content: center; }
         .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; } }
-        #loginScreen { background: radial-gradient(circle at top, #1e40af, #020617); }
+        #loginScreen, #lockScreen { background: radial-gradient(circle at top, #1e40af, #020617); }
         .card-fanto { background: white; border-radius: 40px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: all 0.3s ease; position: relative; }
         .sticky-bottom { position: sticky; bottom: 0; background: white; border-top: 4px solid #f1f5f9; padding: 25px; z-index: 1000; border-radius: 50px 50px 0 0; box-shadow: 0 -20px 50px rgba(0,0,0,0.1); }
         .stock-input { background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 14px; padding: 8px; font-weight: 900; text-align: center; width: 95px; outline: none; transition: 0.3s; color: var(--fanto-navy); }
         .tab-active { background-color: var(--fanto-navy) !important; color: white !important; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25); transform: translateY(-3px); }
         .search-bar { background: #fff; border: 3px solid #e2e8f0; border-radius: 25px; padding: 20px 35px; width: 100%; font-weight: 800; outline: none; transition: 0.3s; font-size: 1.1rem; text-align: center; }
-        .search-bar:focus { border-color: var(--fanto-blue); box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.08); }
         #invoiceContent { width: 550px; min-height: 450px; height: auto; background: white; color: black; padding: 50px; display: flex; flex-direction: column; font-family: 'Courier New', Courier, monospace; border: 1px solid #eee; font-size: 13px; }
         .logo-img-invoice { width: 120px; height: auto; margin: 0 auto 15px; object-fit: contain; display: block; }
         .sync-flash { background: #10b981 !important; color: white !important; transform: scale(1.02); box-shadow: 0 0 60px rgba(16, 185, 129, 0.5); }
     </style>
 </head>
 <body class="w-full text-left">
+
+    <div id="lockScreen" class="fixed inset-0 z-[9000] hidden flex flex-col items-center justify-center p-10 text-center">
+        <div class="bg-white p-16 rounded-[100px] shadow-2xl max-w-lg w-full border-b-[30px] border-red-600">
+            <h2 class="text-6xl font-black text-slate-950 mb-6 uppercase italic tracking-tighter text-center">SISTEMA <span class="text-red-600">SELLADO</span></h2>
+            <p class="text-slate-400 font-bold uppercase mb-10 text-sm text-center">Licencia Expirada. Contacte al Creador.</p>
+            <button onclick="logout()" class="w-full bg-slate-950 text-white py-8 rounded-[60px] font-black uppercase tracking-widest text-sm text-center">Cerrar Sesión</button>
+        </div>
+    </div>
 
     <div id="loginScreen" class="fixed inset-0 z-[6000] flex items-center justify-center p-6 text-center">
         <div class="bg-white p-14 rounded-[110px] shadow-2xl max-w-sm w-full fade-in border-b-[30px] border-blue-900 text-center">
@@ -35,6 +42,7 @@
                 <input type="text" id="username" placeholder="USUARIO" class="w-full p-7 border-4 border-slate-50 rounded-[55px] font-black uppercase outline-none focus:border-blue-600 transition-all bg-slate-50 text-xl shadow-inner text-center">
                 <input type="password" id="password" placeholder="CLAVE" class="w-full p-7 border-4 border-slate-50 rounded-[55px] font-black outline-none focus:border-blue-600 transition-all bg-slate-50 text-xl shadow-inner text-center">
                 <button onclick="handleLogin()" class="w-full bg-blue-700 text-white font-black py-8 rounded-[60px] shadow-2xl hover:bg-blue-800 transition-all uppercase tracking-widest text-base mt-6">Sincronizar Núcleo</button>
+                <p id="loginLicenseMsg" class="text-[10px] font-black text-orange-600 uppercase mt-8 tracking-widest text-center"></p>
             </div>
         </div>
     </div>
@@ -42,11 +50,11 @@
     <div id="mainApp" class="hidden h-screen w-full max-w-2xl md:max-w-4xl flex flex-col bg-white shadow-2xl relative border-x-[6px] border-slate-100 text-left">
         
         <header class="bg-slate-950 text-white p-10 sticky top-0 z-[2000] flex flex-col gap-8 shadow-2xl border-b-[10px] border-blue-900">
-            <div class="flex justify-between items-center text-left">
+            <div class="flex justify-between items-center text-left text-left text-left">
                 <div class="flex items-center gap-6">
-                    <img src="https://i.ibb.co/GfbpGws2/Picsart-26-02-24-20-03-41-830.jpg" alt="LOGO APP" class="w-16 h-16 rounded-xl border-2 border-white/20 shadow-lg text-left">
-                    <div class="text-left">
-                        <h1 class="text-4xl font-black italic tracking-tighter uppercase leading-none text-left text-left">FANTO V1</h1>
+                    <img src="https://i.ibb.co/GfbpGws2/Picsart-26-02-24-20-03-41-830.jpg" alt="LOGO APP" class="w-16 h-16 rounded-xl border-2 border-white/20 shadow-lg text-left text-left">
+                    <div class="text-left text-left text-left">
+                        <h1 class="text-4xl font-black italic tracking-tighter uppercase leading-none text-left">FANTO V1</h1>
                         <p class="text-[12px] font-black text-blue-400 uppercase tracking-widest mt-2 text-left"><span id="userDisplay">---</span> | <span id="roleDisplay">---</span></p>
                     </div>
                 </div>
@@ -57,78 +65,85 @@
                     <button onclick="logout()" class="p-6 bg-white/5 text-white/40 rounded-[35px] font-black text-[11px] uppercase border border-white/5 hover:bg-red-500/20">Salir</button>
                 </div>
             </div>
-            <div id="headerRateBox" class="bg-white/5 border border-white/10 p-6 rounded-[55px] flex justify-between items-center transition-all duration-700 shadow-inner text-left">
-                <div class="flex flex-col text-left font-black">
+            <div id="headerRateBox" class="bg-white/5 border border-white/10 p-6 rounded-[55px] flex justify-between items-center transition-all duration-700 shadow-inner text-left text-left">
+                <div class="flex flex-col text-left font-black text-left">
                     <span class="text-[12px] text-slate-500 uppercase">Tasa Activa Core</span>
                     <span id="headerRateValue" class="text-5xl tabular-nums tracking-tighter text-left">Bs. 0.00</span>
                 </div>
-                <div class="flex gap-5 text-left">
+                <div class="flex gap-5 text-left text-left">
                     <button onclick="manualRatePrompt()" class="p-5 bg-white/10 rounded-3xl hover:bg-white/20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
                     <button onclick="syncBCV()" class="p-5 bg-green-600 rounded-3xl shadow-lg hover:bg-green-500"><svg id="syncIcon" class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
                 </div>
             </div>
         </header>
 
-        <nav class="flex border-b-4 border-slate-100 bg-white p-5 gap-2 sticky top-[280px] z-[1500] text-left">
-            <button onclick="switchTab('caja')" id="tabCaja" class="flex-1 py-6 text-[10px] font-black uppercase rounded-[35px] tab-active">🛒 Caja</button>
-            <button onclick="switchTab('stock')" id="tabStock" class="flex-1 py-6 text-[10px] font-black uppercase rounded-[35px] bg-slate-50 hidden">📦 Stock</button>
-            <button onclick="switchTab('facturas')" id="tabFacturas" class="flex-1 py-6 text-[10px] font-black uppercase rounded-[35px] bg-slate-50 hidden">🧾 Facturas</button>
-            <button onclick="switchTab('stats')" id="tabStats" class="flex-1 py-6 text-[10px] font-black uppercase rounded-[35px] bg-slate-50 hidden">📊 Reporte</button>
-            <button onclick="switchTab('adn')" id="tabADN" class="flex-1 py-6 text-[10px] font-black uppercase rounded-[35px] bg-slate-50 hidden">🧬 ADN</button>
-            <button onclick="switchTab('users')" id="tabUsers" class="flex-1 py-6 text-[10px] font-black uppercase rounded-[35px] bg-slate-50 hidden text-red-500">👥 Personal</button>
+        <nav class="flex border-b-4 border-slate-100 bg-white p-5 gap-1 sticky top-[280px] z-[1500] text-left overflow-x-auto custom-scroll text-left">
+            <button onclick="switchTab('caja')" id="tabCaja" class="flex-1 py-6 px-4 text-[9px] font-black uppercase rounded-[35px] tab-active min-w-[75px]">🛒 Caja</button>
+            <button onclick="switchTab('stock')" id="tabStock" class="flex-1 py-6 px-4 text-[9px] font-black uppercase rounded-[35px] bg-slate-50 hidden min-w-[75px]">📦 Stock</button>
+            <button onclick="switchTab('facturas')" id="tabFacturas" class="flex-1 py-6 px-4 text-[9px] font-black uppercase rounded-[35px] bg-slate-50 hidden min-w-[85px]">🧾 Facturas</button>
+            <button onclick="switchTab('creditos')" id="tabCreditos" class="flex-1 py-6 px-4 text-[9px] font-black uppercase rounded-[35px] bg-slate-50 hidden min-w-[85px]">💳 Créditos</button>
+            <button onclick="switchTab('stats')" id="tabStats" class="flex-1 py-6 px-4 text-[9px] font-black uppercase rounded-[35px] bg-slate-50 hidden min-w-[85px]">📊 Reporte</button>
+            <button onclick="switchTab('adn')" id="tabADN" class="flex-1 py-6 px-4 text-[9px] font-black uppercase rounded-[35px] bg-slate-50 hidden min-w-[65px]">🧬 ADN</button>
+            <button onclick="switchTab('subs')" id="tabSubs" class="flex-1 py-6 px-4 text-[9px] font-black uppercase rounded-[35px] bg-slate-50 hidden min-w-[85px] text-orange-600">🔑 Suscripción</button>
+            <button onclick="switchTab('users')" id="tabUsers" class="flex-1 py-6 px-4 text-[9px] font-black uppercase rounded-[35px] bg-slate-50 hidden min-w-[85px] text-red-500">👥 Personal</button>
         </nav>
 
-        <main class="flex-1 overflow-y-auto custom-scroll p-12 pb-96 text-left">
-            <div id="secCaja" class="fade-in space-y-10">
+        <main class="flex-1 overflow-y-auto custom-scroll p-12 pb-96 text-left text-left">
+            <div id="secCaja" class="fade-in space-y-10 text-left text-left">
                 <input type="text" id="clientName" class="w-full p-8 border-4 border-slate-50 rounded-[55px] font-black uppercase text-2xl outline-none focus:border-blue-600 bg-slate-50 shadow-inner text-center" placeholder="CLIENTE">
-                <div class="grid grid-cols-2 gap-6">
-                    <input type="text" id="cashAmtInput" class="p-8 border-4 border-slate-50 rounded-[55px] font-black uppercase text-xl outline-none focus:border-emerald-600 bg-emerald-50/30 text-center" placeholder="EFECTIVO">
-                    <input type="text" id="payCodeRefInput" class="p-8 border-4 border-slate-50 rounded-[55px] font-black uppercase text-xl outline-none focus:border-blue-600 bg-blue-50/30 text-center" placeholder="PAYCODE">
+                <div class="grid grid-cols-3 gap-4 text-left">
+                    <input type="text" id="cashAmtInput" class="p-8 border-4 border-slate-50 rounded-[55px] font-black uppercase text-sm outline-none focus:border-emerald-600 bg-emerald-50/30 text-center" placeholder="EFECTIVO">
+                    <input type="text" id="payCodeRefInput" class="p-8 border-4 border-slate-50 rounded-[55px] font-black uppercase text-sm outline-none focus:border-blue-600 bg-blue-50/30 text-center" placeholder="PAYCODE">
+                    <input type="text" id="creditAmtInput" class="p-8 border-4 border-slate-50 rounded-[55px] font-black uppercase text-sm outline-none focus:border-orange-600 bg-orange-50/30 text-center" placeholder="A CRÉDITO">
                 </div>
                 <input type="text" id="searchCaja" oninput="filterList('salesList', this.value)" class="search-bar text-center" placeholder="🔍 BUSCAR PRODUCTO...">
                 <div class="space-y-6" id="salesList"></div>
             </div>
 
+            <div id="secSubs" class="hidden fade-in space-y-12">
+                <div class="card-fanto p-14 space-y-10 border-t-[25px] border-orange-500 bg-orange-50/20 shadow-2xl text-left text-left">
+                    <h2 class="text-4xl font-black uppercase italic text-orange-950 text-center text-left">SUSCRIPCIÓN DORADA</h2>
+                    <div class="bg-orange-50 p-10 rounded-[60px] border-4 border-orange-100 shadow-inner text-center">
+                        <p class="text-xs font-bold text-orange-600 uppercase mb-4 text-center">Estado del Licenciamiento</p>
+                        <h4 id="subStatusDisplay" class="text-5xl font-black text-orange-950 uppercase text-center text-left">---</h4>
+                        <p id="subDaysLeftDisplay" class="text-sm font-black text-orange-400 mt-2 uppercase tracking-widest text-center"></p>
+                    </div>
+                    <div class="space-y-6 text-left">
+                        <div class="flex flex-col gap-2 text-left text-left"><span class="text-[11px] font-black text-slate-400 uppercase text-left text-left">FECHA DE PAGO Y MONTO</span>
+                        <input type="text" id="subPaymentDetails" class="w-full p-8 border-4 border-slate-50 rounded-[50px] font-black uppercase text-center focus:border-orange-500 outline-none shadow-inner" placeholder="EJ: 26/02/26 - $100"></div>
+                        <div class="flex flex-col gap-2 text-left text-left"><span class="text-[11px] font-black text-slate-400 uppercase text-left text-left">DÍAS DE VIGENCIA CONCEDIDOS</span>
+                        <input type="number" id="subDaysInput" class="w-full p-8 border-4 border-slate-50 rounded-[50px] font-black text-center focus:border-orange-500 outline-none shadow-inner" placeholder="CANTIDAD DE DÍAS"></div>
+                        <button onclick="saveSubscription()" class="w-full bg-orange-600 text-white py-10 rounded-[60px] font-black uppercase text-base shadow-2xl active:scale-95 border-b-[10px] border-orange-800 text-center">Activar Licencia Titán</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="secStock" class="hidden fade-in space-y-14 text-left">
-                <div class="card-fanto p-12 space-y-8 border-t-[20px] border-emerald-500 text-left text-left">
+                <div class="card-fanto p-12 space-y-8 border-t-[20px] border-emerald-500 text-left">
                     <h3 class="text-2xl font-black uppercase italic text-emerald-800 text-left">Carga Masiva Industrial</h3>
                     <textarea id="bulkInput" rows="6" class="w-full p-8 border-4 border-slate-50 rounded-[45px] font-bold text-base outline-none focus:border-emerald-500 bg-slate-50 shadow-inner" placeholder="PRODUCTO COSTO, VENTA, STOCK"></textarea>
                     <button onclick="bulkProcessProds()" class="w-full bg-emerald-600 text-white py-8 rounded-[55px] font-black uppercase text-base shadow-2xl active:scale-95 transition-all text-center">Registrar Lista Industrial</button>
                 </div>
-                <div class="card-fanto p-12 space-y-8 bg-slate-950 text-white shadow-2xl text-center text-left">
-                    <input type="text" id="pn" placeholder="Descripción Individual" class="w-full p-7 rounded-3xl text-slate-950 font-black uppercase text-xl text-center">
-                    <div class="grid grid-cols-3 gap-6 text-left">
-                        <div class="flex flex-col gap-2 text-center text-left"><span class="text-[11px] font-black text-red-400 uppercase text-left">COSTO $</span><input type="number" id="pc" class="p-7 rounded-3xl text-slate-950 font-black text-2xl border-4 border-red-500/20 text-center"></div>
-                        <div class="flex flex-col gap-2 text-center text-left"><span class="text-[11px] font-black text-green-400 uppercase text-left text-left">VENTA $</span><input type="number" id="pp" class="p-7 rounded-3xl text-slate-950 font-black text-2xl border-4 border-green-500/20 text-center"></div>
-                        <div class="flex flex-col gap-2 text-center text-left"><span class="text-[11px] font-black text-blue-400 uppercase text-left text-left">STOCK</span><input type="number" id="ps" class="p-7 rounded-3xl text-slate-950 font-black text-2xl text-center text-left"></div>
-                    </div>
-                    <button onclick="cProd()" class="w-full bg-blue-600 py-8 rounded-[60px] font-black uppercase text-base shadow-2xl active:scale-95 transition-all text-center">Añadir al Almacén</button>
-                </div>
-                <div class="space-y-6 text-left">
-                    <input type="text" oninput="filterList('adminStockList', this.value)" class="search-bar shadow-xl text-center text-left" placeholder="🔍 FILTRAR INVENTARIO...">
-                    <div id="adminStockList" class="space-y-6 text-left"></div>
-                </div>
+                <div id="adminStockList" class="space-y-6 text-left"></div>
             </div>
 
             <div id="secFacturas" class="hidden fade-in space-y-12 text-left">
-                <div class="text-center"><h2 class="text-4xl font-black uppercase text-slate-950 italic text-center">Control de Documentos</h2><p class="text-[10px] font-bold text-slate-400 uppercase mt-2">Gestión de Devoluciones y Reintegros</p></div>
                 <div id="invoiceLogList" class="space-y-6"></div>
             </div>
 
-            <div id="secAdn" class="hidden fade-in space-y-12">
+            <div id="secCreditos" class="hidden fade-in space-y-12 text-left">
+                <div id="creditsLogList" class="space-y-6"></div>
+            </div>
+
+            <div id="secAdn" class="hidden fade-in space-y-12 text-left">
                 <div class="card-fanto p-14 space-y-10 border-t-[25px] border-indigo-600 bg-indigo-50/20 shadow-2xl text-left">
-                    <h2 class="text-4xl font-black uppercase italic text-indigo-900 text-left text-center">Gestión de ADN Maestro</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-4 text-center">
-                            <button onclick="generateSoulDNA()" class="w-full bg-indigo-700 text-white py-12 rounded-[60px] font-black uppercase text-sm shadow-2xl active:scale-95 border-b-[10px] border-indigo-900 text-center">💾 DESCARGAR ADN (.txt)</button>
-                        </div>
+                    <h2 class="text-4xl font-black uppercase italic text-indigo-900 text-center text-left">Gestión de ADN Maestro</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                        <button onclick="generateSoulDNA()" class="w-full bg-indigo-700 text-white py-12 rounded-[60px] font-black uppercase text-sm shadow-2xl active:scale-95 border-b-[10px] border-indigo-900 text-center">💾 DESCARGAR ADN (.txt)</button>
                         <div class="space-y-4 text-center">
                             <input type="file" id="dnaFileInput" accept=".txt" class="hidden" onchange="loadDnaFromFile(event)">
                             <button onclick="document.getElementById('dnaFileInput').click()" class="w-full bg-emerald-600 text-white py-12 rounded-[60px] font-black uppercase text-sm shadow-2xl active:scale-95 border-b-[10px] border-emerald-800 text-center">📂 CARGAR ADN DESDE EQUIPO</button>
                         </div>
-                    </div>
-                    <div id="soulDnaBox" class="hidden space-y-6">
-                        <textarea id="soulDnaResult" rows="5" class="w-full p-6 font-mono text-[10px] bg-slate-900 text-green-400 rounded-3xl shadow-inner text-left" readonly></textarea>
                     </div>
                 </div>
             </div>
@@ -137,7 +152,7 @@
                 <div class="card-fanto p-12 space-y-8 border-t-[15px] border-blue-900 shadow-2xl text-left">
                     <input type="text" id="nu" placeholder="Usuario" class="w-full p-7 border-4 border-slate-50 rounded-[45px] font-bold uppercase text-xl shadow-inner text-center">
                     <input type="text" id="np" placeholder="Contraseña" class="w-full p-7 border-4 border-slate-50 rounded-[45px] font-bold text-xl shadow-inner text-center">
-                    <select id="nr" class="w-full p-7 border-4 border-slate-50 rounded-[45px] font-black text-sm uppercase bg-white">
+                    <select id="nr" class="w-full p-7 border-4 border-slate-50 rounded-[45px] font-black text-sm uppercase bg-white text-left">
                         <option value="seller">VENDEDOR OPERATIVO</option>
                         <option value="owner">DUEÑO (AUDITORÍA)</option>
                         <option value="creator">CREADOR (CONTROL MAESTRO)</option>
@@ -147,7 +162,7 @@
                 <div id="userTableBody" class="space-y-6 text-left"></div>
             </div>
 
-            <div id="secStats" class="hidden fade-in space-y-12 text-left text-left">
+            <div id="secStats" class="hidden fade-in space-y-12 text-left">
                 <button onclick="generateSalesReport()" class="w-full bg-blue-900 text-white py-12 rounded-[75px] font-black uppercase text-xl shadow-2xl active:scale-95 border-b-[12px] border-blue-800 text-center">📊 EJECUTAR AUDITORÍA GLOBAL</button>
                 <div class="bg-red-50 p-12 rounded-[80px] border-4 border-red-100 shadow-inner text-center text-left">
                     <button onclick="clearSalesHistory()" class="w-full bg-red-600 text-white py-10 rounded-[60px] font-black uppercase text-base shadow-2xl active:scale-95 border-b-[10px] border-red-800 text-center">⚠️ RESETEAR TODO EL BALANCE A CERO</button>
@@ -157,8 +172,8 @@
 
         <div class="sticky-bottom flex justify-between items-center gap-14 text-left">
             <div class="flex-1 space-y-3 text-left">
-                <div class="flex justify-between items-center text-left text-left"><span class="text-[15px] font-black text-slate-400 uppercase tracking-widest text-left text-left">TOTAL USD</span><span id="totalUSD" class="text-7xl font-black tabular-nums text-slate-950 leading-none text-left">$0.00</span></div>
-                <div class="flex justify-between items-center text-left text-left text-left text-left text-left text-left"><span class="text-[15px] font-black text-slate-400 uppercase tracking-widest text-left text-left text-left text-left">TOTAL BS</span><span id="totalVES" class="text-4xl font-black tabular-nums text-green-700 font-black text-left text-left">Bs 0.00</span></div>
+                <div class="flex justify-between items-center text-left text-left text-left"><span class="text-[15px] font-black text-slate-400 uppercase tracking-widest text-left text-left text-left">TOTAL USD</span><span id="totalUSD" class="text-7xl font-black tabular-nums text-slate-950 leading-none text-left">$0.00</span></div>
+                <div class="flex justify-between items-center text-left text-left text-left text-left text-left text-left text-left text-left text-left text-left"><span class="text-[15px] font-black text-slate-400 uppercase tracking-widest text-left text-left text-left text-left text-left text-left">TOTAL BS</span><span id="totalVES" class="text-4xl font-black tabular-nums text-green-700 font-black text-left text-left text-left text-left">Bs 0.00</span></div>
             </div>
             <button onclick="generateInvoice()" class="bg-blue-600 text-white px-20 py-12 rounded-[70px] font-black uppercase text-xl shadow-2xl border-b-[12px] border-blue-800 active:scale-90 transition-all text-center">Facturar</button>
         </div>
@@ -168,62 +183,66 @@
         <div class="bg-white rounded-[100px] p-2 w-auto shadow-2xl relative border-[12px] border-white my-12 text-left">
             <button onclick="document.getElementById('invoiceModal').classList.add('hidden')" class="absolute -top-10 -right-10 bg-red-600 text-white w-24 h-24 rounded-full font-black text-5xl shadow-2xl flex items-center justify-center border-[12px] border-white z-50">✕</button>
             <div id="invoiceContent" class="overflow-y-auto text-left">
-                <div class="border-b-2 border-black pb-8 text-center relative text-left">
+                <div class="border-b-2 border-black pb-8 text-center relative text-left text-left text-left">
                     <img src="https://i.ibb.co/GfbpGws2/Picsart-26-02-24-20-03-41-830.jpg" alt="LOGO" class="logo-img-invoice text-center text-center">
-                    <p class="absolute top-0 right-0 font-black text-left text-left">N° <span id="invNumber">0000</span></p>
-                    <h2 class="font-black uppercase tracking-widest text-lg text-center text-center text-center">FANTO V1</h2>
-                    <p class="uppercase font-bold text-[10px] mt-1 text-center text-center">Ticket de Venta Maestro</p>
+                    <p class="absolute top-0 right-0 font-black text-left text-left text-left">N° <span id="invNumber">0000</span></p>
+                    <h2 class="font-black uppercase tracking-widest text-lg text-center text-center text-center text-center">FANTO V1</h2>
+                    <p class="uppercase font-bold text-[10px] mt-1 text-center text-center text-center">Ticket de Venta Maestro</p>
                 </div>
-                <div class="py-8 space-y-1 uppercase font-bold border-b border-black text-left">
-                    <p class="flex justify-between text-left"><span>FECHA:</span> <span id="invDate"></span></p>
-                    <p class="flex justify-between text-left"><span>CLIENTE:</span> <span id="invClient"></span></p>
+                <div class="py-8 space-y-1 uppercase font-bold border-b border-black text-left text-left">
+                    <p class="flex justify-between text-left text-left text-left"><span>FECHA:</span> <span id="invDate"></span></p>
+                    <p class="flex justify-between text-left text-left text-left"><span>CLIENTE:</span> <span id="invClient"></span></p>
                     <p class="flex justify-between text-left text-left text-left"><span>OPERADOR:</span> <span id="invSeller" class="text-slate-600 text-left text-left text-left"></span></p>
                     <p id="invCashRow" class="flex justify-between hidden text-left text-left"><span>EFECTIVO:</span> <span id="invCashVal"></span></p>
-                    <p id="invPayRow" class="flex justify-between hidden text-left text-left"><span>PAYCODE:</span> <span id="invPayVal"></span></p>
+                    <p id="invPayRow" class="flex justify-between hidden text-left text-left text-left"><span>PAYCODE:</span> <span id="invPayVal"></span></p>
+                    <p id="invCreditRow" class="flex justify-between hidden text-left text-left text-orange-600 text-left"><span>A CRÉDITO:</span> <span id="invCreditVal"></span></p>
                 </div>
-                <div id="invList" class="py-8 space-y-4 flex-1 text-left text-left text-left"></div>
-                <div class="border-t border-black pt-8 font-black text-left text-left text-left">
-                    <div class="flex justify-between items-center mb-1 text-left"><span class="uppercase">TOTAL USD:</span><span id="invTotalUSD"></span></div>
-                    <div class="flex justify-between items-center mb-8 text-slate-600 text-left text-left"><span class="uppercase font-bold text-left text-left text-left text-left">TOTAL BS:</span><span id="invTotalVES"></span></div>
-                    <div class="text-center space-y-1 border-t border-dotted border-black pt-8 text-center text-center">
-                        <p class="text-center">¡MUCHAS GRACIAS POR SU COMPRA!</p>
-                        <p class="text-center text-center">VUELVA PRONTO</p>
+                <div id="invList" class="py-8 space-y-4 flex-1 text-left text-left text-left text-left"></div>
+                <div class="border-t border-black pt-8 font-black text-left text-left text-left text-left text-left">
+                    <div class="flex justify-between items-center mb-1 text-left text-left text-left"><span class="uppercase text-left text-left">TOTAL USD:</span><span id="invTotalUSD"></span></div>
+                    <div class="flex justify-between items-center mb-8 text-slate-600 text-left text-left text-left text-left text-left text-left text-left"><span class="uppercase font-bold text-left text-left text-left text-left text-left">TOTAL BS:</span><span id="invTotalVES"></span></div>
+                    <div class="text-center space-y-1 border-t border-dotted border-black pt-8 text-center text-center text-center text-center text-center text-center">
+                        <p class="text-center text-center text-center">¡MUCHAS GRACIAS POR SU COMPRA!</p>
+                        <p class="text-center text-center text-center">VUELVA PRONTO</p>
                     </div>
                 </div>
             </div>
-            <div class="p-10 text-center"><button onclick="confirmAndDownload()" class="w-full bg-blue-950 text-white py-8 rounded-[70px] font-black uppercase text-sm shadow-2xl active:scale-95 transition-all text-center">💾 GUARDAR FACTURA</button></div>
+            <div class="p-10 text-center text-left text-left text-left text-left text-left text-left text-left"><button onclick="confirmAndDownload()" class="w-full bg-blue-950 text-white py-8 rounded-[70px] font-black uppercase text-sm shadow-2xl active:scale-95 transition-all text-center text-center text-center">💾 GUARDAR FACTURA</button></div>
         </div>
     </div>
 
-    <div id="reportModal" class="fixed inset-0 bg-slate-950/98 hidden flex items-center justify-center p-8 z-[7000] backdrop-blur-3xl text-left">
-        <div class="bg-white rounded-[110px] p-16 w-full max-w-4xl shadow-2xl overflow-y-auto max-h-[92vh] border-t-[35px] border-blue-900 text-center text-left text-left">
-            <div id="reportContent" class="space-y-16 text-left">
-                <div class="text-center border-b-8 border-slate-50 pb-10 text-center text-left text-left"><h2 class="text-6xl font-black italic text-blue-950 uppercase tracking-tighter leading-none text-center text-left">ANÁLISIS ESTRATÉGICO</h2><p id="reportTimestamp" class="text-base font-black text-slate-400 mt-5 uppercase tracking-[0.6em] text-center text-left text-left"></p></div>
-                <div class="grid grid-cols-2 gap-8 text-left text-left">
-                    <div class="bg-emerald-50 p-10 rounded-[60px] border-4 border-emerald-100 shadow-inner">
-                        <p class="text-[11px] font-black uppercase text-emerald-600 mb-2">Efectivo Hoy</p>
-                        <h4 class="text-4xl font-black text-emerald-950 text-left" id="reportCashUSD">$0.00</h4>
-                        <p class="text-xs font-bold text-emerald-600" id="reportCashBS"></p>
+    <div id="reportModal" class="fixed inset-0 bg-slate-950/98 hidden flex items-center justify-center p-8 z-[7000] backdrop-blur-3xl text-left text-left text-left">
+        <div class="bg-white rounded-[110px] p-16 w-full max-w-4xl shadow-2xl overflow-y-auto max-h-[92vh] border-t-[35px] border-blue-900 text-center text-left text-left text-left">
+            <div id="reportContent" class="space-y-10 text-left text-left text-left">
+                <div class="text-center border-b-8 border-slate-50 pb-10 text-center text-left text-left text-left text-left text-left text-left text-left text-left"><h2 class="text-6xl font-black italic text-blue-950 uppercase tracking-tighter leading-none text-center text-left text-center text-center text-center">ANÁLISIS ESTRATÉGICO</h2><p id="reportTimestamp" class="text-base font-black text-slate-400 mt-5 uppercase tracking-[0.6em] text-center text-left text-left text-left text-left text-left text-left text-left"></p></div>
+                <div class="bg-orange-50 p-10 rounded-[60px] border-4 border-orange-100 shadow-inner text-center text-left text-left text-left text-left text-left">
+                    <p class="text-[11px] font-black uppercase text-orange-600 mb-2 text-center text-left text-left">Créditos Pendientes</p>
+                    <h4 class="text-5xl font-black text-orange-950 text-center text-left text-left text-left" id="reportCreditUSD">$0.00</h4>
+                    <p class="text-xs font-bold text-orange-600 text-center text-left text-left text-left" id="reportCreditBS">Bs. 0.00</p>
+                </div>
+                <div class="grid grid-cols-2 gap-8 text-left text-left text-left text-left">
+                    <div class="bg-emerald-50 p-10 rounded-[60px] border-4 border-emerald-100 shadow-inner text-left text-left text-left">
+                        <p class="text-[11px] font-black uppercase text-emerald-600 mb-2 text-left text-left">Efectivo Hoy</p>
+                        <h4 class="text-4xl font-black text-emerald-950 text-left text-left" id="reportCashUSD">$0.00</h4>
+                        <p class="text-xs font-bold text-emerald-600 text-left text-left text-left" id="reportCashBS"></p>
                     </div>
-                    <div class="bg-blue-50 p-10 rounded-[60px] border-4 border-blue-100 shadow-inner text-left text-left">
-                        <p class="text-[11px] font-black uppercase text-blue-600 mb-2 text-left">Paycode Hoy</p>
-                        <h4 class="text-4xl font-black text-blue-950 text-left" id="reportPayUSD">$0.00</h4>
-                        <p class="text-xs font-bold text-blue-600" id="reportPayBS"></p>
+                    <div class="bg-blue-50 p-10 rounded-[60px] border-4 border-blue-100 shadow-inner text-left text-left text-left text-left text-left">
+                        <p class="text-[11px] font-black uppercase text-blue-600 mb-2 text-left text-left text-left text-left text-left">Paycode Hoy</p>
+                        <h4 class="text-4xl font-black text-blue-950 text-left text-left text-left text-left text-left" id="reportPayUSD">$0.00</h4>
+                        <p class="text-xs font-bold text-blue-600 text-left text-left text-left text-left" id="reportPayBS"></p>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-12 text-center text-left text-left">
-                    <div class="bg-blue-50 p-12 rounded-[75px] border-4 border-blue-100 shadow-inner text-left text-left"><p class="text-base font-black uppercase text-blue-500 mb-2 tracking-widest text-left text-left">Facturado Bruto</p><h4 class="text-6xl font-black text-blue-900 text-left" id="dailyUSD"></h4><p class="text-xl font-bold text-blue-500" id="dailyBS"></p></div>
-                    <div class="bg-emerald-50 p-12 rounded-[75px] border-4 border-emerald-100 shadow-inner text-left text-left"><p class="text-base font-black uppercase text-emerald-600 mb-2 tracking-widest text-left text-left">Ganancia Neta</p><h4 class="text-6xl font-black text-emerald-900 text-left" id="dailyProfit"></h4><p class="text-xl font-bold text-emerald-600" id="dailyProfitBS"></p></div>
+                <div class="grid grid-cols-2 gap-12 text-center text-left text-left text-left text-left text-left text-left text-left">
+                    <div class="bg-blue-50 p-12 rounded-[75px] border-4 border-blue-100 shadow-inner text-left text-left text-left text-left text-left text-left text-left text-left"><p class="text-base font-black uppercase text-blue-500 mb-2 tracking-widest text-left text-left text-left text-left text-left text-left text-left text-left">Facturado Bruto</p><h4 class="text-6xl font-black text-blue-900 text-left text-left text-left text-left" id="dailyUSD"></h4><p class="text-xl font-bold text-blue-500 text-left text-left text-left text-left text-left" id="dailyBS"></p></div>
+                    <div class="bg-emerald-50 p-12 rounded-[75px] border-4 border-emerald-100 shadow-inner text-left text-left text-left text-left text-left text-left text-left text-left text-left text-left"><p class="text-base font-black uppercase text-emerald-600 mb-2 tracking-widest text-left text-left text-left text-left text-left text-left text-left text-left text-left">Ganancia Neta</p><h4 class="text-6xl font-black text-emerald-900 text-left text-left text-left text-left text-left" id="dailyProfit"></h4><p class="text-xl font-bold text-emerald-600 text-left text-left text-left text-left text-left" id="dailyProfitBS"></p></div>
                 </div>
-                <div class="bg-slate-900 p-16 rounded-[95px] text-center text-white shadow-2xl text-center text-left text-left"><p class="text-[16px] font-black uppercase text-indigo-400 mb-4 tracking-[0.6em] text-center text-center">Acumulado Semanal</p><h4 class="text-[7rem] font-black tabular-nums text-center text-left" id="weeklyUSD"></h4><p class="text-2xl font-bold text-indigo-400" id="weeklyBS"></p></div>
-                <div class="text-left text-left"><h5 class="text-base font-black uppercase text-slate-400 border-b-8 border-slate-50 mb-12 pb-5 text-left text-left">Ranking Sellers</h5><table class="w-full text-3xl font-black border-separate border-spacing-y-6 text-orange-900 text-left text-left"><tbody id="sellerRankingList"></tbody></table></div>
             </div>
-            <div class="mt-20 grid grid-cols-2 gap-12 px-14 text-center text-left text-center text-left"><button onclick="downloadReportImage()" class="bg-blue-600 text-white py-10 rounded-[70px] font-black uppercase text-base shadow-2xl text-center text-left">📥 Descargar Reporte</button><button onclick="document.getElementById('reportModal').classList.add('hidden')" class="bg-slate-100 text-slate-500 py-10 rounded-[70px] font-black uppercase text-base text-center">Cerrar</button></div>
+            <div class="mt-20 grid grid-cols-2 gap-12 px-14 text-center text-left text-center text-left text-left text-left text-left text-left text-left text-left text-left text-left text-left text-left text-left text-left"><button onclick="downloadReportImage()" class="bg-blue-600 text-white py-10 rounded-[70px] font-black uppercase text-base shadow-2xl text-center text-left text-left text-left text-left text-left text-left">📥 Descargar Reporte</button><button onclick="document.getElementById('reportModal').classList.add('hidden')" class="bg-slate-100 text-slate-500 py-10 rounded-[70px] font-black uppercase text-base text-center text-left text-left text-left text-left text-left text-left text-left">Cerrar</button></div>
         </div>
     </div>
 
     <script>
-        const C = { STOCK: 'FAN_T_STK', USERS: 'FAN_T_USR', HISTORY: 'FAN_T_SAL', RATE: 'FAN_T_RAT', COUNTER: 'FAN_T_CNT' };
+        const C = { STOCK: 'FAN_T_STK', USERS: 'FAN_T_USR', HISTORY: 'FAN_T_SAL', RATE: 'FAN_T_RAT', COUNTER: 'FAN_T_CNT', LICENSE: 'FAN_T_LIC' };
         const getDB = (k, d) => JSON.parse(localStorage.getItem(k)) || d;
         const saveDB = (k, v) => localStorage.setItem(k, JSON.stringify(v));
         const MASTERS = { "CREADOR": { p: "CREATOR", r: "creator" }, "DUENO": { p: "PROPIETARIO", r: "owner" }, "ADMIN": { p: "FACTU", r: "creator" } };
@@ -235,26 +254,60 @@
                 if (getDB(C.HISTORY, []).length === 0) saveDB(C.HISTORY, MASTER_CORE_DNA.history);
                 if (!localStorage.getItem(C.COUNTER)) saveDB(C.COUNTER, MASTER_CORE_DNA.counter);
                 if (!localStorage.getItem(C.RATE)) saveDB(C.RATE, MASTER_CORE_DNA.rate);
+                if (!localStorage.getItem(C.LICENSE)) saveDB(C.LICENSE, MASTER_CORE_DNA.license);
             }
             if (!localStorage.getItem(C.COUNTER)) saveDB(C.COUNTER, 1);
         }
 
         function speak(text) { const msg = new SpeechSynthesisUtterance(text); msg.lang = 'es-ES'; msg.rate = 0.95; window.speechSynthesis.speak(msg); }
         
-        function announceFullAudit() {
-            const p = getDB(C.STOCK, []), h = getDB(C.HISTORY, []), today = new Date().toDateString();
-            let invCap = 0; p.forEach(x => invCap += (x.price * x.stock));
-            let dSalesUSD = 0, dCount = 0, dCash = 0, dPay = 0;
-            h.forEach(s => { if(new Date(s.timestamp).toDateString() === today) { const sUSD = parseFloat(s.usd) || 0; dSalesUSD += sUSD; dCount++; if(s.isCash && !s.isPaycode) dCash += sUSD; else if(s.isPaycode && !s.isCash) dPay += sUSD; else if(s.isCash && s.isPaycode) { dCash += (sUSD/2); dPay += (sUSD/2); } else { dCash += sUSD; } } });
-            speak(`Bienvenido Ricardo. El capital proyectado es de ${invCap.toFixed(0)} dólares. Hoy se han realizado ${dCount} ventas para un total de ${dSalesUSD.toFixed(0)} dólares. El balance es de ${dCash.toFixed(0)} dólares en efectivo y ${dPay.toFixed(0)} dólares por Paycode.`);
+        // --- MONITOR DE LICENCIA ---
+        function checkLicense() {
+            const lic = getDB(C.LICENSE, null);
+            const msgEl = document.getElementById('loginLicenseMsg');
+            if (!lic) {
+                if(msgEl) msgEl.innerText = "SISTEMA SIN LICENCIA ACTIVA";
+                return true;
+            }
+            const now = Date.now();
+            const daysLeft = Math.ceil((lic.expiryDate - now) / (1000 * 60 * 60 * 24));
+            
+            // Actualizar mensaje en Login
+            if(msgEl) {
+                if (daysLeft > 0) {
+                    msgEl.innerText = `${daysLeft} DÍAS DE LICENCIA RESTANTES`;
+                    msgEl.classList.add('text-orange-600');
+                } else {
+                    msgEl.innerText = "LICENCIA EXPIRADA - ACCESO SELLADO";
+                    msgEl.classList.replace('text-orange-600', 'text-red-600');
+                }
+            }
+
+            if (now > lic.expiryDate && sessionStorage.getItem('r') !== 'creator') {
+                document.getElementById('mainApp').classList.add('hidden');
+                document.getElementById('lockScreen').classList.remove('hidden');
+                speak("La suscripción ha expirado. El sistema está sellado.");
+                return false;
+            }
+            return true;
         }
 
         function handleLogin() {
             coreRecovery();
             const u = document.getElementById('username').value.trim().toUpperCase(), p = document.getElementById('password').value.trim().toUpperCase();
             const dbU = getDB(C.USERS, {}), all = { ...MASTERS, ...dbU };
-            if(all[u] && all[u].p.toUpperCase() === p) { sessionStorage.setItem('u',u); sessionStorage.setItem('r',all[u].r); startApp(); if(all[u].r === 'owner' || all[u].r === 'creator') announceFullAudit(); } 
-            else { alert("DENEGADO: Acceso incorrecto."); }
+            if(all[u] && all[u].p.toUpperCase() === p) { 
+                sessionStorage.setItem('u',u); sessionStorage.setItem('r',all[u].r); 
+                if (checkLicense()) startApp(); 
+            } else { alert("ERROR: Acceso Denegado."); }
+        }
+
+        function announceFullAudit() {
+            const p = getDB(C.STOCK, []), h = getDB(C.HISTORY, []), today = new Date().toDateString();
+            let invCap = 0; p.forEach(x => invCap += (x.price * x.stock));
+            let dSalesUSD = 0, dCount = 0;
+            h.forEach(s => { if(s.paid && new Date(s.paidTimestamp || s.timestamp).toDateString() === today) { dSalesUSD += parseFloat(s.usd); dCount++; } });
+            speak(`Bienvenido Ricardo. Hoy se han liquidado ${dCount} ventas.`);
         }
 
         function startApp() {
@@ -266,17 +319,35 @@
             if(r === 'creator' || r === 'owner') { 
                 document.getElementById('tabStock').classList.remove('hidden'); document.getElementById('tabStats').classList.remove('hidden'); 
                 document.getElementById('tabADN').classList.remove('hidden'); document.getElementById('tabFacturas').classList.remove('hidden');
-                if(r === 'creator') { document.getElementById('tabUsers').classList.remove('hidden'); }
+                document.getElementById('tabCreditos').classList.remove('hidden');
+                if(r === 'creator') { document.getElementById('tabUsers').classList.remove('hidden'); document.getElementById('tabSubs').classList.remove('hidden'); }
             }
-            refreshAppState();
+            renderSubscription(); refreshAppState();
+        }
+
+        function saveSubscription() {
+            const details = document.getElementById('subPaymentDetails').value.trim();
+            const days = parseInt(document.getElementById('subDaysInput').value);
+            if (!details || isNaN(days)) return alert("Faltan datos.");
+            const lic = { paymentDetails: details, expiryDate: Date.now() + (days * 24 * 60 * 60 * 1000), totalDays: days };
+            saveDB(C.LICENSE, lic); speak("Suscripción activada."); renderSubscription();
+        }
+
+        function renderSubscription() {
+            const lic = getDB(C.LICENSE, null);
+            if (!lic) { document.getElementById('subStatusDisplay').innerText = "SIN LICENCIA"; return; }
+            const daysLeft = Math.ceil((lic.expiryDate - Date.now()) / (1000 * 60 * 60 * 24));
+            document.getElementById('subStatusDisplay').innerText = daysLeft > 0 ? "LICENCIA ACTIVA" : "EXPIRADA";
+            document.getElementById('subDaysLeftDisplay').innerText = daysLeft > 0 ? `${daysLeft} DÍAS RESTANTES` : "BLOQUEO ACTIVO";
         }
 
         function switchTab(t) {
-            ['secCaja','secStock','secUsers','secStats','secAdn','secFacturas'].forEach(s => document.getElementById(s).classList.add('hidden'));
-            ['tabCaja','tabStock','tabUsers','tabStats','tabADN','tabFacturas'].forEach(s => document.getElementById(s).classList.remove('tab-active','bg-slate-900','text-white'));
+            ['secCaja','secStock','secUsers','secStats','secAdn','secFacturas','secCreditos','secSubs'].forEach(s => document.getElementById(s).classList.add('hidden'));
+            ['tabCaja','tabStock','tabUsers','tabStats','tabADN','tabFacturas','tabCreditos','tabSubs'].forEach(s => document.getElementById(s).classList.remove('tab-active','bg-slate-900','text-white'));
             document.getElementById('sec'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden');
             document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('tab-active','bg-slate-900','text-white');
             if(t === 'facturas') renderInvoices();
+            if(t === 'creditos') renderCredits();
         }
 
         function filterList(id, v) { const val = v.toUpperCase(); document.querySelectorAll(`#${id} > div`).forEach(c => { const n = (c.querySelector('p') || c.querySelector('.name-admin')).innerText.toUpperCase(); c.style.display = n.includes(val) ? 'flex' : 'none'; }); }
@@ -284,7 +355,6 @@
         function refreshAppState(visual = false) {
             const rate = parseFloat(getDB(C.RATE, 38.30));
             document.getElementById('headerRateValue').innerText = `Bs. ${rate.toFixed(2)}`;
-            if(visual) { const b = document.getElementById('headerRateBox'); b.classList.add('sync-flash'); setTimeout(()=>b.classList.remove('sync-flash'), 1000); }
             renderSales(); renderStockAdmin(); renderUserAdmin(); calculate();
         }
 
@@ -293,8 +363,8 @@
             document.getElementById('salesList').innerHTML = p.map(x => {
                 const out = x.stock <= 0;
                 return `<div class="card-fanto p-10 flex justify-between items-center ${out?'opacity-30':''}" data-id="${x.id}">
-                    <div class="flex items-center gap-10"><input type="checkbox" class="p-check w-14 h-14 rounded-2xl accent-blue-600 cursor-pointer" onchange="calculate()" ${out?'disabled':''}>
-                    <div class="text-left text-left"><p class="font-black uppercase text-3xl text-slate-950">${x.name}</p><p class="text-[14px] font-black text-slate-400 mt-4 uppercase text-left">Stock: ${x.stock}</p></div></div>
+                    <div class="flex items-center gap-10"><input type="checkbox" class="p-check w-14 h-14 rounded-2xl accent-blue-600" onchange="calculate()" ${out?'disabled':''}>
+                    <div class="text-left"><p class="font-black uppercase text-3xl text-slate-950">${x.name}</p><p class="text-[14px] font-black text-slate-400 mt-4 uppercase">Stock: ${x.stock}</p></div></div>
                     <div class="text-right flex items-center gap-12"><span class="text-blue-600 font-black text-5xl">$${x.price.toFixed(2)}</span>
                     <input type="number" class="p-qty w-24 p-5 bg-slate-50 border-4 rounded-3xl text-center font-black text-3xl" value="1" min="1" max="${x.stock}" oninput="calculate()" ${out?'disabled':''}>
                     <div class="w-44 font-black text-5xl tabular-nums p-sub text-slate-950 text-right">$0.00</div></div></div>`;
@@ -311,7 +381,6 @@
             document.getElementById('totalVES').innerText = `Bs ${(t * r).toFixed(2)}`;
         }
 
-        // --- PROTOCOLO DE FACTURAS CON REINTEGRO ---
         function renderInvoices() {
             const h = [...getDB(C.HISTORY, [])].reverse();
             const rate = parseFloat(getDB(C.RATE, 38.30));
@@ -321,35 +390,46 @@
                 return `<div class="card-fanto p-10 flex justify-between items-center shadow-lg border-l-[15px] border-blue-500">
                     <div class="text-left font-black uppercase space-y-2">
                         <p class="text-2xl text-slate-950">F-${String(s.folio).padStart(4,'0')} — ${s.client || "S/N"}</p>
-                        <p class="text-xl text-blue-600">$${parseFloat(s.usd).toFixed(2)} — <span class="text-green-700">Bs. ${bsVal}</span></p>
+                        <p class="text-xl text-blue-600">$${parseFloat(s.usd).toFixed(2)} — Bs. ${bsVal}</p>
+                        ${s.isCredit && !s.paid ? '<span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-[10px]">DEUDA</span>' : ''}
                     </div>
-                    <button onclick="deleteInvoice(${realIdx})" class="p-6 bg-red-50 text-red-600 rounded-3xl text-4xl font-black hover:bg-red-600 hover:text-white transition-all">✕</button>
+                    <button onclick="deleteInvoice(${realIdx})" class="p-6 bg-red-50 text-red-600 rounded-3xl text-4xl font-black">✕</button>
                 </div>`;
             }).join('');
         }
 
-        function deleteInvoice(idx) {
-            if(confirm("⚠️ ¿Eliminar factura por DEVOLUCIÓN? Se reintegrará el stock.")) {
-                const h = getDB(C.HISTORY, []), pDB = getDB(C.STOCK, []);
-                const inv = h[idx];
-                
-                // Reintegro Automático al Inventario
-                if(inv.items) {
-                    inv.items.forEach(item => {
-                        const product = pDB.find(p => p.name === item.n);
-                        if(product) product.stock += item.q;
-                    });
-                }
+        function renderCredits() {
+            const h = [...getDB(C.HISTORY, [])].filter(s => s.isCredit && !s.paid).reverse();
+            const rate = parseFloat(getDB(C.RATE, 38.30));
+            if(h.length === 0) { document.getElementById('creditsLogList').innerHTML = '<p class="text-center text-slate-400 font-black py-20 uppercase">Sin cuentas pendientes</p>'; return; }
+            document.getElementById('creditsLogList').innerHTML = h.map((s) => {
+                const bsVal = (parseFloat(s.usd) * rate).toFixed(2);
+                return `<div class="card-fanto p-12 flex justify-between items-center shadow-xl border-l-[20px] border-orange-500">
+                    <div class="text-left font-black uppercase space-y-2"><p class="text-3xl text-slate-950">Folio: ${String(s.folio).padStart(4,'0')}</p><p class="text-2xl text-slate-400">${s.client}</p><p class="text-2xl text-orange-600">DEUDA: $${parseFloat(s.usd).toFixed(2)} — Bs. ${bsVal}</p></div>
+                    <button onclick="payCredit(${s.folio})" class="bg-emerald-600 text-white px-12 py-8 rounded-[50px] font-black uppercase text-sm shadow-xl active:scale-95">Cobrar Deuda</button></div>`;
+            }).join('');
+        }
 
-                h.splice(idx, 1);
-                saveDB(C.HISTORY, h); saveDB(C.STOCK, pDB);
-                speak("Productos reintegrados al almacén satisfactoriamente.");
-                renderInvoices(); refreshAppState();
+        function payCredit(folio) {
+            const method = prompt("LÍQUIDACIÓN DE CRÉDITO:\n1 - EFECTIVO\n2 - PAYCODE", "1");
+            if (method !== "1" && method !== "2") return;
+            const h = getDB(C.HISTORY, []); const idx = h.findIndex(s => s.folio === folio);
+            if(idx !== -1) {
+                h[idx].paid = true; h[idx].paidTimestamp = Date.now(); h[idx].isCash = (method === "1"); h[idx].isPaycode = (method === "2"); h[idx].isCredit = false;
+                saveDB(C.HISTORY, h); speak("Deuda cobrada exitosamente."); renderCredits(); refreshAppState();
+            }
+        }
+
+        function deleteInvoice(idx) {
+            if(confirm("⚠️ ¿Eliminar factura y reintegrar stock?")) {
+                const h = getDB(C.HISTORY, []), pDB = getDB(C.STOCK, []); const inv = h[idx];
+                if(inv.items) { inv.items.forEach(item => { const product = pDB.find(p => p.name === item.n); if(product) product.stock += item.q; }); }
+                h.splice(idx, 1); saveDB(C.HISTORY, h); saveDB(C.STOCK, pDB); renderInvoices(); refreshAppState();
             }
         }
 
         function generateSoulDNA() {
-            const soul = { stock: getDB(C.STOCK, []), users: getDB(C.USERS, {}), history: getDB(C.HISTORY, []), counter: getDB(C.COUNTER, 1), rate: getDB(C.RATE, 38.30) };
+            const soul = { stock: getDB(C.STOCK, []), users: getDB(C.USERS, {}), history: getDB(C.HISTORY, []), counter: getDB(C.COUNTER, 1), rate: getDB(C.RATE, 38.30), license: getDB(C.LICENSE, null) };
             const code = `const MASTER_CORE_DNA = ${JSON.stringify(soul)};`;
             const blob = new Blob([code], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
@@ -362,14 +442,12 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const content = e.target.result;
-                    const jsonStr = content.substring(content.indexOf('{'), content.lastIndexOf('}') + 1);
-                    const imported = JSON.parse(jsonStr);
+                    const imported = JSON.parse(e.target.result.split('= ')[1]);
                     if(imported.stock && imported.users) {
-                        saveDB(C.STOCK, imported.stock); saveDB(C.USERS, imported.users); saveDB(C.HISTORY, imported.history || []); saveDB(C.COUNTER, imported.counter || 1); saveDB(C.RATE, imported.rate || 38.30);
-                        speak("Sincronización de alma exitosa."); location.reload();
+                        saveDB(C.STOCK, imported.stock); saveDB(C.USERS, imported.users); saveDB(C.HISTORY, imported.history || []); saveDB(C.COUNTER, imported.counter || 1); saveDB(C.RATE, imported.rate || 38.30); saveDB(C.LICENSE, imported.license || null);
+                        location.reload();
                     }
-                } catch(err) { alert("Archivo inválido."); }
+                } catch(err) { alert("Error de ADN."); }
             }; reader.readAsText(file);
         }
 
@@ -380,40 +458,39 @@
                 try {
                     const parts = line.split(',').map(s => s.trim());
                     if(parts.length >= 3) {
-                        const stock = parseInt(parts.pop()), price = parseFloat(parts.pop());
-                        const nameAndCost = parts.join(','), lastSpace = nameAndCost.lastIndexOf(' ');
+                        const stock = parseInt(parts.pop()), price = parseFloat(parts.pop()), nameAndCost = parts.join(','), lastSpace = nameAndCost.lastIndexOf(' ');
                         const name = nameAndCost.substring(0, lastSpace).trim().toUpperCase(), cost = parseFloat(nameAndCost.substring(lastSpace).trim());
                         if(name && !isNaN(price)) { d.push({ id: Date.now() + Math.random(), name, cost: cost || 0, price, stock: stock || 0 }); }
                     }
                 } catch(e) { }
             });
-            saveDB(C.STOCK, d); document.getElementById('bulkInput').value = ''; refreshAppState(); alert("CARGA EXITOSA");
+            saveDB(C.STOCK, d); refreshAppState(); alert("CARGA OK");
         }
 
         function cProd() {
             const n = document.getElementById('pn').value.toUpperCase(), c = parseFloat(document.getElementById('pc').value)||0, p = parseFloat(document.getElementById('pp').value), s = parseInt(document.getElementById('ps').value);
-            if(n && !isNaN(p)) { let d = getDB(C.STOCK, []); d.push({ id: Date.now(), name: n, cost: c, price: p, stock: s||0 }); saveDB(C.STOCK, d); refreshAppState(); alert("REGISTRADO"); }
+            if(n && !isNaN(p)) { let d = getDB(C.STOCK, []); d.push({ id: Date.now(), name: n, cost: c, price: p, stock: s||0 }); saveDB(C.STOCK, d); refreshAppState(); alert("OK"); }
         }
 
         function renderStockAdmin() {
-            document.getElementById('adminStockList').innerHTML = getDB(C.STOCK, []).map(x => `<div class="card-fanto p-8 flex justify-between items-center shadow-lg"><div class="name-admin uppercase font-black text-xl w-1/3 text-slate-900">${x.name}</div><div class="flex gap-4"><input type="number" id="cost-${x.id}" value="${x.cost}" class="stock-input text-red-500"><input type="number" id="price-${x.id}" value="${x.price}" class="stock-input text-blue-600"><input type="number" id="stock-${x.id}" value="${x.stock}" class="stock-input text-slate-900"></div><div class="flex gap-4"><button onclick="updateProd(${x.id})" class="p-5 bg-green-50 text-green-600 rounded-[25px] text-4xl">💾</button><button onclick="delP(${x.id})" class="p-5 bg-red-50 text-red-500 rounded-[25px] text-4xl">✕</button></div></div>`).join('');
+            document.getElementById('adminStockList').innerHTML = getDB(C.STOCK, []).map(x => `<div class="card-fanto p-8 flex justify-between items-center shadow-lg"><div class="name-admin uppercase font-black text-xl w-1/3 text-slate-900">${x.name}</div><div class="flex gap-4"><input type="number" id="cost-${x.id}" value="${x.cost}" class="stock-input text-red-500 text-left"><input type="number" id="price-${x.id}" value="${x.price}" class="stock-input text-blue-600 text-left"><input type="number" id="stock-${x.id}" value="${x.stock}" class="stock-input text-slate-900 text-left"></div><div class="flex gap-4"><button onclick="updateProd(${x.id})" class="p-5 bg-green-50 text-green-600 rounded-[25px] text-4xl">💾</button><button onclick="delP(${x.id})" class="p-5 bg-red-50 text-red-500 rounded-[25px] text-4xl">✕</button></div></div>`).join('');
         }
 
-        function updateProd(id) { const p = getDB(C.STOCK, []), i = p.findIndex(x => x.id == id); p[i].cost = parseFloat(document.getElementById(`cost-${id}`).value); p[i].price = parseFloat(document.getElementById(`price-${id}`).value); p[i].stock = parseInt(document.getElementById(`stock-${id}`).value); saveDB(C.STOCK, p); refreshAppState(true); alert("Actualizado"); }
+        function updateProd(id) { const p = getDB(C.STOCK, []), i = p.findIndex(x => x.id == id); p[i].cost = parseFloat(document.getElementById(`cost-${id}`).value); p[i].price = parseFloat(document.getElementById(`price-${id}`).value); p[i].stock = parseInt(document.getElementById(`stock-${id}`).value); saveDB(C.STOCK, p); refreshAppState(true); }
         function delP(id) { if(confirm("¿Eliminar?")){ saveDB(C.STOCK, getDB(C.STOCK,[]).filter(x=>x.id!=id)); refreshAppState(); } }
 
         function cUser() { const n = document.getElementById('nu').value.toUpperCase(), p = document.getElementById('np').value, r = document.getElementById('nr').value; if(n && p) { const d = getDB(C.USERS, {}); d[n] = {p, r}; saveDB(C.USERS, d); refreshAppState(); alert("OK"); } }
         function renderUserAdmin() {
-            const mastersList = Object.entries(MASTERS).map(([k,v]) => `<div class="card-fanto p-8 flex justify-between items-center text-left bg-slate-50 border-blue-200 border-2"><div class="font-black uppercase text-2xl text-slate-900">${k}<br><span class="text-[10px] uppercase bg-blue-100 px-3 py-1 rounded-md text-blue-600">MASTER CORE</span></div><div class="text-blue-500 font-black">SISTEMA</div></div>`).join('');
-            const customList = Object.entries(getDB(C.USERS, {})).map(([k,v]) => `<div class="card-fanto p-8 flex justify-between items-center text-left"><div class="font-black uppercase text-2xl text-slate-900">${k}<br><span class="text-[10px] uppercase bg-slate-100 px-3 py-1 rounded-md text-slate-500">${v.r}</span></div><button onclick="delU('${k}')" class="text-red-500 font-black text-5xl">✕</button></div>`).join('');
+            const mastersList = Object.entries(MASTERS).map(([k,v]) => `<div class="card-fanto p-8 flex justify-between items-center text-left bg-slate-50 border-blue-200 border-2"><div class="font-black uppercase text-2xl text-slate-900 text-left text-left">${k}<br><span class="text-[10px] uppercase bg-blue-100 px-3 py-1 rounded-md text-blue-600">MASTER CORE</span></div><div class="text-blue-500 font-black">MASTER</div></div>`).join('');
+            const customList = Object.entries(getDB(C.USERS, {})).map(([k,v]) => `<div class="card-fanto p-8 flex justify-between items-center text-left"><div class="font-black uppercase text-2xl text-slate-900 text-left text-left">${k}<br><span class="text-[10px] uppercase bg-slate-100 px-3 py-1 rounded-md text-slate-500">${v.r}</span></div><button onclick="delU('${k}')" class="text-red-500 font-black text-5xl">✕</button></div>`).join('');
             document.getElementById('userTableBody').innerHTML = mastersList + customList;
         }
         function delU(k) { if(confirm("¿Borrar?")){ const d=getDB(C.USERS,{}); delete d[k]; saveDB(C.USERS,d); refreshAppState(); } }
 
         function generateInvoice() {
             const usd = document.getElementById('totalUSD').innerText; if(usd === "$0.00") return alert("Caja vacía");
-            const cV = document.getElementById('cashAmtInput').value.trim(), pV = document.getElementById('payCodeRefInput').value.trim();
-            if(!cV && !pV) return alert("REQUERIDO: Ingrese Efectivo o Paycode.");
+            const cV = document.getElementById('cashAmtInput').value.trim(), pV = document.getElementById('payCodeRefInput').value.trim(), crV = document.getElementById('creditAmtInput').value.trim();
+            if(!cV && !pV && !crV) return alert("Falta método de pago.");
             const folio = String(getDB(C.COUNTER, 1)).padStart(4, '0');
             document.getElementById('invNumber').innerText = folio;
             document.getElementById('invClient').innerText = document.getElementById('clientName').value || "CONSUMIDOR FINAL";
@@ -423,8 +500,9 @@
             document.getElementById('invTotalVES').innerText = document.getElementById('totalVES').innerText;
             if(cV) { document.getElementById('invCashRow').classList.remove('hidden'); document.getElementById('invCashVal').innerText = cV.toUpperCase(); } else document.getElementById('invCashRow').classList.add('hidden');
             if(pV) { document.getElementById('invPayRow').classList.remove('hidden'); document.getElementById('invPayVal').innerText = pV.toUpperCase(); } else document.getElementById('invPayRow').classList.add('hidden');
+            if(crV) { document.getElementById('invCreditRow').classList.remove('hidden'); document.getElementById('invCreditVal').innerText = crV.toUpperCase(); } else document.getElementById('invCreditRow').classList.add('hidden');
             let l = ""; const pDB = getDB(C.STOCK, []);
-            document.querySelectorAll('#salesList .p-check:checked').forEach(check => { const card = check.closest('[data-id]'), p = pDB.find(x => x.id == card.getAttribute('data-id')); l += `<div class="flex justify-between border-b border-black border-dotted pb-2"><span>${p.name} (x${card.querySelector('.p-qty').value})</span><span>${card.querySelector('.p-sub').innerText}</span></div>`; });
+            document.querySelectorAll('#salesList .p-check:checked').forEach(check => { const card = check.closest('[data-id]'), p = pDB.find(x => x.id == card.getAttribute('data-id')); l += `<div class="flex justify-between border-b border-black border-dotted pb-2 text-left"><span>${p.name} (x${card.querySelector('.p-qty').value})</span><span>${card.querySelector('.p-sub').innerText}</span></div>`; });
             document.getElementById('invList').innerHTML = l; document.getElementById('invoiceModal').classList.remove('hidden');
         }
 
@@ -433,41 +511,53 @@
             document.querySelectorAll('#salesList .p-check:checked').forEach(check => { const card = check.closest('[data-id]'), q = parseFloat(card.querySelector('.p-qty').value), idx = pDB.findIndex(x => x.id == card.getAttribute('data-id')); if(idx !== -1) { pDB[idx].stock -= q; sold.push({ n: pDB[idx].name, q: q }); } });
             const num = getDB(C.COUNTER, 1), h = getDB(C.HISTORY, []); 
             const tUSDVal = parseFloat(document.getElementById('totalUSD').innerText.replace('$','')) || 0;
-            const cV = document.getElementById('cashAmtInput').value.trim(), pV = document.getElementById('payCodeRefInput').value.trim();
-            h.push({ timestamp: Date.now(), usd: tUSDVal, client: document.getElementById('invClient').innerText, items: sold, seller: sessionStorage.getItem('u'), folio: num, isCash: cV !== "", isPaycode: pV !== "" });
+            const cV = document.getElementById('cashAmtInput').value.trim(), pV = document.getElementById('payCodeRefInput').value.trim(), crV = document.getElementById('creditAmtInput').value.trim();
+            h.push({ timestamp: Date.now(), usd: tUSDVal, client: document.getElementById('invClient').innerText, items: sold, seller: sessionStorage.getItem('u'), folio: num, isCash: cV !== "", isPaycode: pV !== "", isCredit: crV !== "", paid: crV === "" });
             saveDB(C.STOCK, pDB); saveDB(C.HISTORY, h); saveDB(C.COUNTER, num + 1);
-            const c = await html2canvas(document.getElementById('invoiceContent'), { scale: 3, backgroundColor: '#ffffff', useCORS: true });
-            const l = document.createElement('a'); l.download=`Ticket_${num}_FANTO.png`; l.href=c.toDataURL(); l.click();
-            document.getElementById('cashAmtInput').value = ''; document.getElementById('payCodeRefInput').value = ''; document.getElementById('clientName').value = ''; refreshAppState(true); document.getElementById('invoiceModal').classList.add('hidden');
+            const c = await html2canvas(document.getElementById('invoiceContent'), { scale: 3 });
+            const l = document.createElement('a'); l.download=`Ticket_${num}.png`; l.href=c.toDataURL(); l.click();
+            ['cashAmtInput','payCodeRefInput','creditAmtInput','clientName'].forEach(i=>document.getElementById(i).value='');
+            refreshAppState(true); document.getElementById('invoiceModal').classList.add('hidden');
         }
 
         function generateSalesReport() {
             try {
                 const h = getDB(C.HISTORY, []); if(!h.length) return alert("Sin ventas.");
                 const now = new Date(), today = now.toDateString(), week = now.getTime() - (7*24*60*60*1000), rate = parseFloat(getDB(C.RATE, 38.30));
-                let dUSD = 0, wUSD = 0, dProf = 0, dT = {}, sT = {}, cT = 0, pT = 0;
+                let dUSD = 0, dProf = 0, cT = 0, pT = 0, crT = 0;
                 const pRef = getDB(C.STOCK, []);
-                h.forEach(s => { if(!s || !s.timestamp) return; const sDate = new Date(s.timestamp), sUSD = parseFloat(s.usd) || 0; if(sDate.toDateString() === today) { dUSD += sUSD; if(s.isCash && !s.isPaycode) cT += sUSD; else if(s.isPaycode && !s.isCash) pT += sUSD; else if(s.isCash && s.isPaycode) { cT += (sUSD/2); pT += (sUSD/2); } else cT += sUSD; if(s.items) s.items.forEach(it => { const r = pRef.find(p=>p.name===it.n); if(r) { dProf += (r.price-r.cost)*it.q; dT[it.n]=(dT[it.n]||0)+it.q; } }); } if(s.timestamp >= week) wUSD += sUSD; const sel = s.seller || "S/N"; sT[sel] = (sT[sel]||0)+sUSD; });
+
+                h.forEach(s => {
+                    const sUSD = parseFloat(s.usd) || 0;
+                    if(s.isCredit && !s.paid) { crT += sUSD; }
+                    else {
+                        const sDate = new Date(s.paidTimestamp || s.timestamp);
+                        if(sDate.toDateString() === today) {
+                            dUSD += sUSD; if(s.isCash && !s.isPaycode) cT += sUSD; else if(s.isPaycode && !s.isCash) pT += sUSD; else if(s.isCash && s.isPaycode) { cT += (sUSD/2); pT += (sUSD/2); } else { cT += sUSD; }
+                            if(s.items) s.items.forEach(it => { const r = pRef.find(p=>p.name===it.n); if(r) { dProf += (r.price-r.cost)*it.q; } });
+                        }
+                    }
+                });
+                document.getElementById('reportCreditUSD').innerText = `$${crT.toFixed(2)}`; document.getElementById('reportCreditBS').innerText = `Bs. ${(crT * rate).toFixed(2)}`;
                 document.getElementById('reportCashUSD').innerText = `$${cT.toFixed(2)}`; document.getElementById('reportCashBS').innerText = `Bs. ${(cT * rate).toFixed(2)}`;
                 document.getElementById('reportPayUSD').innerText = `$${pT.toFixed(2)}`; document.getElementById('reportPayBS').innerText = `Bs. ${(pT * rate).toFixed(2)}`;
                 document.getElementById('dailyUSD').innerText = `$${dUSD.toFixed(2)}`; document.getElementById('dailyBS').innerText = `Bs. ${(dUSD * rate).toFixed(2)}`;
                 document.getElementById('dailyProfit').innerText = `$${dProf.toFixed(2)}`; document.getElementById('dailyProfitBS').innerText = `Bs. ${(dProf * rate).toFixed(2)}`;
-                document.getElementById('weeklyUSD').innerText = `$${wUSD.toFixed(2)}`; document.getElementById('weeklyBS').innerText = `Bs. ${(wUSD * rate).toFixed(2)}`;
-                document.getElementById('sellerRankingList').innerHTML = Object.entries(sT).sort((a,b)=>b[1]-a[1]).map(([n,a])=>`<tr class="border-b-2 border-slate-50"><td class="py-4 uppercase text-lg text-left">$${a.toFixed(2)}</td><td class="text-right font-black text-orange-600">${n}</td></tr>`).join('');
                 document.getElementById('reportModal').classList.remove('hidden');
             } catch (err) { alert("Error."); }
         }
 
-        function clearSalesHistory() { if(confirm("⚠️ ¿Resetear balance?") && confirm("¿Confirmas?")) { saveDB(C.HISTORY, []); saveDB(C.COUNTER, 1); speak("Historial limpiado."); refreshAppState(true); } }
-        async function downloadReportImage() { const c = await html2canvas(document.getElementById('reportContent'), { scale: 3, backgroundColor: '#ffffff' }); const l = document.createElement('a'); l.download=`Auditoria_FANTO.png`; l.href=c.toDataURL(); l.click(); }
+        // --- PURGA MAESTRA RESTAURADA ---
+        function clearSalesHistory() { if(confirm("⚠️ ¿VACIAR TODO?") && confirm("¿Ricardo, confirmas la Purga?")) { saveDB(C.HISTORY, []); saveDB(C.COUNTER, 1); speak("Historial limpiado."); refreshAppState(true); } }
+        async function downloadReportImage() { const c = await html2canvas(document.getElementById('reportContent'), { scale: 3 }); const l = document.createElement('a'); l.download=`Auditoria.png`; l.href=c.toDataURL(); l.click(); }
         function logout() { sessionStorage.clear(); location.reload(); }
-        function manualRatePrompt() { const v = prompt("Tasa manual:", getDB(C.RATE, 38.30)); if(v) { saveDB(C.RATE, parseFloat(v)); saveDB('manual_lock',true); refreshAppState(true); } }
-        async function syncBCV() { if(getDB('manual_lock',false) && !confirm("¿Sincronizar?")) return; saveDB('manual_lock',false); try { const r = await fetch('https://ve.dolarapi.com/v1/dolares/oficial'), d = await r.json(); if(d.promedio) { saveDB(C.RATE, d.promedio); refreshAppState(true); } } catch(e) {} }
+        function manualRatePrompt() { const v = prompt("Tasa:", getDB(C.RATE, 38.30)); if(v) { saveDB(C.RATE, parseFloat(v)); refreshAppState(true); } }
+        async function syncBCV() { try { const r = await fetch('https://ve.dolarapi.com/v1/dolares/oficial'), d = await r.json(); if(d.promedio) { saveDB(C.RATE, d.promedio); refreshAppState(true); } } catch(e) {} }
 
-        window.onload = () => { coreRecovery(); if(sessionStorage.getItem('u')) startApp(); };
+        window.onload = () => { coreRecovery(); checkLicense(); };
 
-        // 🧬 ZONA: CÉLULAS MADRE (ADN INYECTADO)
-        const MASTER_CORE_DNA = {"stock":[{"id":1771940886200,"name":"PAN ARABE","cost":1,"price":1.8,"stock":98},{"id":1771942594302,"name":"CACIQUE 1L","cost":8,"price":10,"stock":297},{"id":1771942629883,"name":"HARINA PAN","cost":0.75,"price":1.2,"stock":24},{"id":1771942947174,"name":"CERVEZA POLAR","cost":0.6,"price":0.9,"stock":556},{"id":1771950018008,"name":"PERFUME CABALLERO ","cost":10,"price":15,"stock":100},{"id":1771974185498,"name":"CLORO BLANTECH","cost":0.65,"price":1,"stock":8},{"id":1771974259769,"name":"PAN 5 CANILLAS","cost":0.7,"price":1,"stock":9},{"id":1771974397727,"name":"CREMA DENTAL COLGATE","cost":2,"price":3,"stock":8},{"id":1771974454661,"name":"PASTA CORTA 1KG","cost":1,"price":2,"stock":17},{"id":1771975370682,"name":"DETERGENTE EL FAMOSO 1KG","cost":1.5,"price":2.2,"stock":49},{"id":1771975741250.2134,"name":"HARINA DE ARROZ","cost":0.9,"price":1.1,"stock":19},{"id":1771975741250.0518,"name":"SALCHICHA","cost":0.1,"price":0.19,"stock":99},{"id":1771975741250.9143,"name":"QUESO","cost":5,"price":6.5,"stock":9},{"id":1771978893828,"name":"KELT","cost":5,"price":6.5,"stock":7},{"id":1771979405271,"name":"CIGARRO DETAL","cost":0.08,"price":0.15,"stock":8},{"id":1771979457110.278,"name":"JUGO 1L","cost":1,"price":1.5,"stock":28},{"id":1771985181884,"name":"HARINA ","cost":1.7,"price":2,"stock":40},{"id":1771996192953,"name":"COOL 2L","cost":0.7,"price":1.1,"stock":100}],"users":{},"history":[],"counter":1,"rate":38.30};
+        // 🧬 ZONA ADN
+        const MASTER_CORE_DNA = {"stock":[{"id":1771940886200,"name":"PAN ARABE","cost":1,"price":1.8,"stock":98},{"id":1771942594302,"name":"CACIQUE 1L","cost":8,"price":10,"stock":297},{"id":1771942629883,"name":"HARINA PAN","cost":0.75,"price":1.2,"stock":24},{"id":1771942947174,"name":"CERVEZA POLAR","cost":0.6,"price":0.9,"stock":556},{"id":1771950018008,"name":"PERFUME CABALLERO ","cost":10,"price":15,"stock":100},{"id":1771974185498,"name":"CLORO BLANTECH","cost":0.65,"price":1,"stock":8},{"id":1771974259769,"name":"PAN 5 CANILLAS","cost":0.7,"price":1,"stock":9},{"id":1771974397727,"name":"CREMA DENTAL COLGATE","cost":2,"price":3,"stock":8},{"id":1771974454661,"name":"PASTA CORTA 1KG","cost":1,"price":2,"stock":17},{"id":1771975370682,"name":"DETERGENTE EL FAMOSO 1KG","cost":1.5,"price":2.2,"stock":49},{"id":1771975741250.2134,"name":"HARINA DE ARROZ","cost":0.9,"price":1.1,"stock":19},{"id":1771975741250.0518,"name":"SALCHICHA","cost":0.1,"price":0.19,"stock":99},{"id":1771975741250.9143,"name":"QUESO","cost":5,"price":6.5,"stock":9},{"id":1771978893828,"name":"KELT","cost":5,"price":6.5,"stock":7},{"id":1771979405271,"name":"CIGARRO DETAL","cost":0.08,"price":0.15,"stock":8},{"id":1771979457110.278,"name":"JUGO 1L","cost":1,"price":1.5,"stock":28},{"id":1771985181884,"name":"HARINA ","cost":1.7,"price":2,"stock":40},{"id":1771996192953,"name":"COOL 2L","cost":0.7,"price":1.1,"stock":100}],"users":{},"history":[],"counter":1,"rate":38.30,"license":null};
     </script>
 </body>
 </html>
